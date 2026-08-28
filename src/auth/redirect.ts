@@ -1,4 +1,5 @@
 const DEFAULT_AUTH_DESTINATION = "/dashboard";
+const AUTH_DESTINATION_ORIGIN = "https://acetate.local";
 
 export function safeAuthDestination(value: string | null): string {
   if (
@@ -11,9 +12,9 @@ export function safeAuthDestination(value: string | null): string {
   }
 
   try {
-    const destination = new URL(value, "https://gabrr.local");
+    const destination = new URL(value, AUTH_DESTINATION_ORIGIN);
     if (
-      destination.origin !== "https://gabrr.local" ||
+      destination.origin !== AUTH_DESTINATION_ORIGIN ||
       destination.pathname === "/auth/confirm"
     ) {
       return DEFAULT_AUTH_DESTINATION;

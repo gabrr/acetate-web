@@ -1,4 +1,5 @@
 import { AppHeader } from "@/components/navigation/app-header";
+import { PRODUCT } from "@/config/product";
 import type { Metadata } from "next";
 import Providers from "./providers";
 import { Box, Flex } from "@chakra-ui/react";
@@ -6,11 +7,12 @@ import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(PRODUCT.canonicalOrigin),
   title: {
-    default: "Acetate",
-    template: "%s | Acetate",
+    default: PRODUCT.title,
+    template: `%s | ${PRODUCT.name}`,
   },
-  description: "A clear view of your spending, statements, and wealth path.",
+  description: PRODUCT.description,
 };
 
 export default function RootLayout({

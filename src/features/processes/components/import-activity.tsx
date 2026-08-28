@@ -1,5 +1,6 @@
 import { forwardRef } from "react";
 
+import { PRODUCT } from "@/config/product";
 import { formatJobTime, friendlyStep } from "../mappers";
 import type { ImportJob } from "../types";
 import styles from "./processes.module.css";
@@ -15,7 +16,11 @@ export const ImportActivity = forwardRef<HTMLHeadingElement, { job: ImportJob; o
         <header className={styles.activityHeading}>
           <div>
             <h3 ref={ref} id="activity-title" tabIndex={-1}>Import activity</h3>
-            <p>{failed ? "The import stopped before any transactions were saved." : "Updates appear here as Acetate prepares your statement."}</p>
+            <p>
+              {failed
+                ? "The import stopped before any transactions were saved."
+                : `Updates appear here as ${PRODUCT.name} prepares your statement.`}
+            </p>
           </div>
         </header>
         <ol className={styles.activityFeed} aria-live="polite" aria-relevant="additions text">

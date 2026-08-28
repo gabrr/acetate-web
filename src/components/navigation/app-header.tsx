@@ -1,6 +1,7 @@
 "use client";
 
 import { browserAuth } from "@/auth/browser";
+import { PRODUCT } from "@/config/product";
 import { useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
@@ -77,12 +78,12 @@ export function AppHeader() {
         <Link
           className={styles.brand}
           href="/dashboard"
-          aria-label="Acetate dashboard"
+          aria-label={`${PRODUCT.name} dashboard`}
         >
           <Image
             className={styles.brandLockup}
             src="/brand/acetate-horizontal.svg"
-            alt="Acetate"
+            alt={PRODUCT.name}
             width={446}
             height={90}
             priority

@@ -2,6 +2,7 @@
 
 import { browserAuth } from "@/auth/browser";
 import { safeAuthDestination } from "@/auth/redirect";
+import { PRODUCT } from "@/config/product";
 import {
   Box,
   Button,
@@ -137,7 +138,7 @@ function LoginForm() {
         <Stack gap="7">
           <Box>
             <Heading as="h1" textStyle="pageTitle">
-              Acetate
+              {PRODUCT.name}
             </Heading>
             <Text color="text.secondary" mt="2">
               See Tomorrow. Shape it Today.
