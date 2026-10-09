@@ -1,34 +1,25 @@
 {
-  "name": "acetate-web",
-  "version": "0.1.0",
+  "name": "frontend-0.2",
+  "version": "0.2.0",
   "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch server.mjs",
+    "start": "node server.mjs",
+    "test": "node --test",
+    "start:prod": "node server.mjs --production",
+    "build": "node scripts/build.mjs",
+    "dev:landing": "node scripts/landing-server.mjs"
+  },
   "engines": {
     "node": ">=22.0.0"
   },
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
-  },
   "dependencies": {
-    "@chakra-ui/react": "^3.31.0",
-    "@emotion/react": "^11.14.0",
-    "@supabase/ssr": "^0.12.3",
-    "@supabase/supabase-js": "^2.110.8",
-    "@tanstack/react-query": "^5.101.4",
-    "@vercel/analytics": "^2.0.1",
-    "next": "16.1.1",
-    "react": "19.2.3",
-    "react-dom": "19.2.3"
-  },
-  "devDependencies": {
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "babel-plugin-react-compiler": "1.0.0",
-    "eslint": "^9",
-    "eslint-config-next": "16.1.1",
-    "typescript": "^5"
+    "@microsoft/fetch-event-source": "2.0.1",
+    "@phosphor-icons/core": "2.1.1",
+    "@picocss/pico": "2.1.1",
+    "@supabase/supabase-js": "2.110.8",
+    "dompurify": "3.4.16",
+    "marked": "18.0.14"
   }
 }

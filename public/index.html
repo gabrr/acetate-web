@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Frontend 0.2</title>
+  <link rel="stylesheet" href="/vendor/pico.css">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/vendor/supabase.js"></script>
+  <script type="module" src="/auth.js"></script>
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <header class="masthead">
+    <img src="/assets/acetate.svg" alt="Acetate" width="112">
+  </header>
+  <main class="workspace">
+    <section class="run-panel" aria-label="Classification workflow">
+      <div class="run-controls">
+        <form id="upload">
+          <label for="file">PDF statement</label>
+          <div class="composer">
+            <input id="file" name="file" type="file" accept=".pdf,application/pdf" required>
+            <button id="send" type="submit">Send PDF</button>
+            <button id="cancel" type="button" class="outline secondary" hidden>Stop watching</button>
+          </div>
+        </form>
+        <p id="storage-error" role="alert" class="muted" hidden></p>
+        <div id="attachment" hidden></div>
+        <div class="run-status">
+          <p id="status" role="status" aria-live="polite">Ready for your statement.</p>
+          <span id="timer" role="timer" aria-label="Elapsed time" aria-live="off" hidden>Elapsed 0 seconds</span>
+        </div>
+        <p id="error" role="alert" hidden></p>
+      </div>
+        <div id="history-controls" class="history-controls" hidden>
+          <label for="saved-file">Saved file</label>
+          <select id="saved-file" aria-label="Saved file"></select>
+          <div id="versions" role="group" aria-label="Run versions"></div>
+        </div>
+      <div class="flow"><ol id="steps" aria-label="Workflow steps"></ol></div>
+    </section>
+    <div class="content-panel">
+      <section class="transactions-panel" aria-label="Transactions">
+        <p id="results-placeholder" class="muted">Transactions will appear here.</p>
+        <section id="results" hidden>
+          <div class="results-heading">
+            <h2>Transactions <small id="count"></small></h2>
+            <button id="inspect-result" type="button" class="outline secondary">Inspect complete JSON</button>
+          </div>
+          <p id="sort-label" class="muted">Lowest confidence first</p>
+          <div class="table-scroll"><table>
+            <thead><tr><th aria-sort="none"><button type="button" data-sort="description">Description</button></th><th aria-sort="none"><button type="button" data-sort="amount">Amount</button></th><th aria-sort="none"><button type="button" data-sort="report_bucket">Category</button></th><th aria-sort="ascending"><button type="button" data-sort="classification_confidence">Confidence ↑</button></th></tr></thead>
+            <tbody id="transactions"></tbody>
+          </table></div>
+        </section>
+      </section>
+      <aside class="inspector" aria-label="Step output">
+        <div class="inspector-heading">
+          <h2 id="output-title">Step output</h2>
+          <button id="copy" class="outline secondary" disabled>Copy</button>
+        </div>
+        <div id="markdown-output" class="markdown-output" tabindex="0" hidden></div>
+        <pre id="source-output" tabindex="0"><code id="output">Select a step to see its output.</code></pre>
+      </aside>
+    </div>
+  </main>
+  <aside class="account-panel" aria-label="Your account" aria-busy="true">
+    <div class="account-heading"><span class="account-dot" aria-hidden="true"></span><strong>Account</strong></div>
+    <p id="account-status" role="status" aria-live="polite">Checking sign-in…</p>
+    <button id="sign-in" type="button" disabled>Sign in with Google</button>
+    <button id="sign-out" type="button" class="outline secondary" hidden>Sign out</button>
+    <p id="auth-error" role="alert" hidden></p>
+    <nav class="account-legal" aria-label="Legal"><a href="https://acetate.me/privacy-policy">Privacy</a><a href="https://acetate.me/terms-of-service">Terms</a></nav>
+  </aside>
+</body>
+</html>

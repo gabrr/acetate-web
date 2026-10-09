@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Visualize your wealth growth and understand how today's choices may shape your financial future.">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#101010" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiIgc2hhcGUtcmVuZGVyaW5nPSJnZW9tZXRyaWNQcmVjaXNpb24iIHJvbGU9ImltZyIgYXJpYS1sYWJlbGxlZGJ5PSJ0aXRsZSBkZXNjIj4KICA8dGl0bGUgaWQ9InRpdGxlIj5BY2V0YXRlIFNpZ2h0bGluZSBtaWNybyBtYXJrPC90aXRsZT4KICA8ZGVzYyBpZD0iZGVzYyI+QSBwaXhlbC1jb25zY2lvdXMgc21hbGwtc2l6ZSB2ZXJzaW9uIG9mIHRoZSBTaWdodGxpbmUgbWFyay48L2Rlc2M+CiAgPHBhdGggZmlsbD0iIzAwMCIgZmlsbC1ydWxlPSJldmVub2RkIiBkPSJNMSAwSDE1VjE2SDFaIE0xLjUgMTBMMy4yNSA4LjI1SDEyLjc1TDE0LjUgMTBaIi8+Cjwvc3ZnPgo=">
+  <title>Acetate | See tomorrow. Shape it today.</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --canvas: #fff; --ink: #101010; --muted: #646866;
+      --rule: #d8d8d2; --soft-rule: #ecece8; --pane: #f7f7f5;
+      --horizon: #2f6f7e; --focus: #174b59;
+      --editorial: "Iowan Old Style", Baskerville, Georgia, serif;
+      --interface: "Söhne", "Helvetica Neue", Arial, sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { color-scheme: dark; --canvas: #101010; --ink: #f7f7f5; --muted: #b9bdbb; --rule: #3c4240; --soft-rule: #2c302e; --pane: #191c1b; --horizon: #76a8b2; --focus: #76a8b2; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--canvas); color: var(--ink); font-family: var(--interface); -webkit-font-smoothing: antialiased; }
+    button, input { font: inherit; color: inherit; }
+    button, a, input { -webkit-tap-highlight-color: transparent; }
+    :focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; }
+    .page { width: min(1160px, calc(100% - 96px)); margin: auto; min-height: 100svh; display: flex; flex-direction: column; }
+    .header { display: flex; align-items: center; justify-content: space-between; min-height: 80px; }
+    .logo { width: 190px; height: auto; display: block; }
+    .logo-reversed { display: none; }
+    @media (prefers-color-scheme: dark) { .logo-positive { display: none; } .logo-reversed { display: block; } }
+    main { flex: 1; display: flex; align-items: center; padding: 44px 0 48px; }
+    .hero { width: 100%; display: grid; grid-template-columns: .95fr 1.05fr; align-items: center; gap: clamp(40px, 6vw, 80px); }
+    h1 { margin: 0; font: 400 clamp(48px, 5.15vw, 72px)/1.03 var(--editorial); letter-spacing: -.05em; }
+    h1 span { display: block; white-space: nowrap; }
+    .description { max-width: 380px; margin: 26px 0 30px; color: var(--muted); font-size: 18px; line-height: 1.6; }
+    .login { display: inline-flex; align-items: center; justify-content: space-between; gap: 44px; min-height: 50px; padding: 0 18px 0 22px; border-radius: 10px; background: var(--ink); color: var(--canvas); text-decoration: none; font-size: 15px; font-weight: 500; }
+    .login svg { width: 18px; height: 18px; }
+    .login:hover { background: var(--horizon); color: var(--canvas); }
+    .preview { min-width: 0; padding: 26px 28px 22px; border: 1px solid var(--rule); border-radius: 16px; background: var(--pane); }
+    .preview-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .preview-header h2 { margin: 0; font-size: 14px; font-weight: 500; letter-spacing: -.01em; }
+    .sample { color: var(--muted); font-size: 11px; }
+    .reading { padding-top: 20px; }
+    .reading-label { margin: 0 0 8px; color: var(--muted); font-size: 12px; }
+    .reading-value { margin: 0; font-size: clamp(36px, 3.6vw, 48px); line-height: 1; font-weight: 400; font-variant-numeric: tabular-nums; letter-spacing: -.05em; }
+    .difference { margin: 10px 0 0; font-size: 12px; color: var(--horizon); line-height: 1.5; }
+    .chart { display: block; width: 100%; height: auto; margin: 18px 0 0; overflow: visible; }
+    .grid-line { stroke: var(--rule); stroke-width: 1; opacity: .55; }
+    .axis-text { fill: var(--muted); font: 11px var(--interface); }
+    .baseline { stroke: var(--ink); }
+    .alternative { stroke: var(--horizon); }
+    .chart-path { fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .area { fill: var(--horizon); opacity: .08; }
+    .cursor { stroke: var(--horizon); stroke-width: 1; stroke-dasharray: 3 5; opacity: .65; }
+    .point { fill: var(--pane); stroke-width: 2; }
+    .legend { display: flex; flex-wrap: wrap; gap: 16px; margin: 4px 0 22px; color: var(--muted); font-size: 11px; }
+    .legend span { display: inline-flex; gap: 6px; align-items: center; }
+    .key { width: 18px; height: 0; border-top: 2px solid var(--ink); }
+    .key-alt { border-color: var(--horizon); }
+    .controls { padding-top: 18px; border-top: 1px solid var(--rule); }
+    .control-title { display: flex; align-items: baseline; justify-content: space-between; font-size: 12px; }
+    .control-title output { font-variant-numeric: tabular-nums; }
+    .play { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0; border: 0; background: transparent; color: var(--horizon); font-size: 12px; cursor: pointer; }
+    .play svg { width: 14px; height: 14px; }
+    .play:disabled { opacity: .6; cursor: default; }
+    .timeline-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 6px; color: var(--muted); font-size: 10.5px; }
+    .axis-break { stroke: var(--muted); stroke-width: 1.25; fill: none; }
+    .chart-touch { touch-action: pan-y; }
+    .point-halo { fill: var(--horizon); opacity: .08; transform-box: fill-box; transform-origin: center; }
+    .timeline-caption { fill: var(--muted); font: 10px var(--interface); }
+
+    .scrubber { display: block; appearance: none; width: 100%; height: 44px; margin: 6px 0 0; background: transparent; cursor: pointer; }
+    .scrubber::-webkit-slider-runnable-track { height: 2px; background: var(--rule); }
+    .scrubber::-webkit-slider-thumb { appearance: none; width: 18px; height: 18px; margin-top: -8px; border: 4px solid var(--pane); border-radius: 50%; background: var(--horizon); box-shadow: 0 0 0 1px var(--horizon); }
+    .scrubber::-moz-range-track { height: 2px; background: var(--rule); }
+    .scrubber::-moz-range-thumb { width: 10px; height: 10px; border: 4px solid var(--pane); border-radius: 50%; background: var(--horizon); box-shadow: 0 0 0 1px var(--horizon); }
+    .range-labels { display: flex; justify-content: space-between; margin-top: -2px; color: var(--muted); font-size: 10px; }
+    .choice { min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 10px; font-size: 12px; cursor: pointer; }
+    .choice input { width: 18px; height: 18px; margin: 0; accent-color: var(--horizon); }
+    .choice-text { min-height: 26px; display: flex; align-items: center; }
+    .assumptions { margin: 14px 0 0; color: var(--muted); font-size: 11.5px; line-height: 1.65; }
+    .assumptions span { display: block; }
+    footer { display: flex; justify-content: space-between; gap: 20px; padding: 22px 0; border-top: 1px solid var(--soft-rule); color: var(--muted); font-size: 12px; line-height: 1.6; }
+    footer p { margin: 0; }
+    .legal-links { display: flex; gap: 16px; } .legal-links a { color: inherit; }
+    .account-panel { position: fixed; z-index: 20; left: 24px; bottom: 24px; width: 232px; padding: 18px; border: 1px solid var(--rule); border-radius: 14px; background: var(--canvas); box-shadow: 0 6px 24px rgba(0,0,0,.1); }
+    .account-panel[hidden] { display: none; } .account-panel h2 { margin: 0; font-size: 13px; font-weight: 500; }
+    .account-panel p { margin: 8px 0 14px; font-size: 12px; color: var(--muted); }
+    .account-panel .login { width: 100%; min-height: 40px; justify-content: center; padding: 0 12px; font-size: 12px; }
+    .account-close { position: absolute; top: 8px; right: 8px; border: 0; background: transparent; padding: 6px; cursor: pointer; }
+
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    .skip { position: absolute; top: 8px; left: 20px; padding: 10px 14px; background: var(--ink); color: var(--canvas); transform: translateY(-150%); border-radius: 10px; }
+    .skip:focus { transform: translateY(0); }
+    @media (max-width: 1000px) {
+      .page { width: calc(100% - 64px); }
+      .hero { gap: 32px; }
+      h1 { font-size: clamp(40px, 5vw, 54px); }
+      .preview { padding: 24px 22px 20px; }
+      .description { font-size: 16px; }
+    }
+    @media (max-width: 760px) {
+      .page { width: calc(100% - 40px); }
+      .header { min-height: 72px; }
+      main { padding: 32px 0 40px; }
+      .hero { grid-template-columns: 1fr; gap: 42px; }
+      h1 { font-size: clamp(38px, 10.8vw, 62px); }
+      .axis-text { font-size: 16px; }
+      .description { max-width: 380px; margin: 20px 0 24px; }
+      .preview { width: 100%; max-width: 520px; justify-self: center; }
+      footer { font-size: 11px; }
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .login svg { transition: transform 160ms ease; }
+      .login:hover svg { transform: translateX(3px); }
+      .chart-path { animation: reveal-path 620ms cubic-bezier(.22,1,.36,1) both; }
+      @keyframes reveal-path { from { stroke-dasharray: 1; stroke-dashoffset: 1; } to { stroke-dasharray: 1; stroke-dashoffset: 0; } }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="page">
+    <header class="header">
+      <div>
+        <img class="logo logo-positive" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NDYiIGhlaWdodD0iOTAiIHZpZXdCb3g9IjAgMCA0NDYgOTAiPgogIDx0aXRsZT5BY2V0YXRlIGhvcml6b250YWwgbG9ja3VwPC90aXRsZT4KICA8ZGVmcz4KICAgIDxwYXRoIGlkPSJzaWdodGxpbmUiIGZpbGwtcnVsZT0iZXZlbm9kZCIgZD0iTTAgMEg4NlYxMDBIMFogTTIgNThMMTQgNTJINzJMODQgNThaIi8+CiAgICA8ZyBpZD0iYWNldGF0ZS13b3JkbWFyayI+PHBhdGggaWQ9Im9wZW4tYSIgZD0iTTE3IDBMMzMwIDY5OEgzNDlMNjUwIDBINTQ0TDM0NSA2ODBMOTEgMFoiLz4KICAgIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDc3NCAwKSI+CiAgICAgIDxwYXRoIGQ9Ik02MTUgMzlRNjA2IDMxIDU4Ni41IDIxLjVRNTY3IDEyIDUzOS41IDQuNVE1MTIgLTMgNDc4IC05UTQ0NCAtMTUgNDA3IC0xNVEzMjggLTE1IDI2MSA3LjVRMTk0IDMwIDE0NS41IDc2UTk3IDEyMiA2OS41IDE4OC41UTQyIDI1NSA0MiAzNDBRNDIgNDI1IDY5LjUgNDkxLjVROTcgNTU4IDE0Ni41IDYwNFExOTYgNjUwIDI2NSA2NzRRMzM0IDY5OCA0MTcgNjk4UTQ4MyA2OTggNTM3LjUgNjg0LjVRNTkyIDY3MSA2MzQgNjUyUTYyNiA2MzggNjIxIDYxNFE2MTYgNTkwIDYxMyA1NzRMNjA3IDU3MlE1OTcgNTg0IDU3OSA1OTlRNTYxIDYxNCA1MzcgNjI4UTUxMyA2NDIgNDgzIDY1MS41UTQ1MyA2NjEgNDE3IDY2MVEzNTggNjYxIDMwNy41IDY0MlEyNTcgNjIzIDIxOS41IDU4My41UTE4MiA1NDQgMTYxIDQ4My41UTE0MCA0MjMgMTQwIDM0MFExNDAgMjU3IDE2MSAxOTYuNVExODIgMTM2IDIxOS41IDk2LjVRMjU3IDU3IDMwNy41IDM4UTM1OCAxOSA0MTcgMTlRNDUzIDE5IDQ4My41IDI4UTUxNCAzNyA1MzkuNSA0OS41UTU2NSA2MiA1ODUuNSA3Ni41UTYwNiA5MSA2MjAgMTAyTDYyNCA5OFoiLz4KICAgIDwvZz4KICAgIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDE1MTIgMCkiPgogICAgICA8cGF0aCBkPSJNOTggNDI3UTk4IDQ5MyA5NS41IDU1N1E5MyA2MjEgOTAgNjg1UTEzNSA2ODMgMTc5LjUgNjgxLjVRMjI0IDY4MCAyNjkgNjgwUTMxNCA2ODAgMzU4IDY4MS41UTQwMiA2ODMgNDQ3IDY4NVE0NDQgNjcwIDQ0NCA2NTVRNDQ0IDY0MCA0NDcgNjI1UTQxNSA2MjcgMzg4LjUgNjI5UTM2MiA2MzEgMzMyLjUgNjMzUTMwMyA2MzUgMjY4IDYzNi41UTIzMyA2MzggMTg0IDYzOFExODMgNjA2IDE4MS41IDU3N1ExODAgNTQ4IDE4MCA1MTFRMTgwIDQ3MiAxODAuNSA0MzVRMTgxIDM5OCAxODEgMzc5UTIyNSAzNzkgMjYwIDM4MFEyOTUgMzgxIDMyNCAzODIuNVEzNTMgMzg0IDM3Ny41IDM4NS41UTQwMiAzODcgNDI0IDM4OVE0MjEgMzc0IDQyMSAzNThRNDIxIDM0MyA0MjQgMzI4UTM5OCAzMzEgMzYzLjUgMzMzUTMyOSAzMzUgMjk0LjUgMzM1LjVRMjYwIDMzNiAyMjkuNSAzMzYuNVExOTkgMzM3IDE4MSAzMzdRMTgxIDMyOCAxODAuNSAzMTcuNVExODAgMzA3IDE4MCAyOTFWMTkyUTE4MCAxMzUgMTgwLjUgOThRMTgxIDYxIDE4MiA0MlEyMTUgNDIgMjUyIDQyUTI5MCA0MiAzMjYuNSA0My41UTM2MyA0NSAzOTUuNSA0Ny41UTQyOCA1MCA0NTIgNTVRNDUwIDQ4IDQ0OS41IDM5LjVRNDQ5IDMxIDQ0OSAyNFE0NDkgOCA0NTIgLTJRNDA3IDAgMzYyLjUgMFEzMTggMCAyNzIgMFEyMjYgMCAxODEgMFExMzYgMCA5MCAtMlE5MyA2MiA5NS41IDEyNS41UTk4IDE4OSA5OCAyNTVaIi8+CiAgICA8L2c+CiAgICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgyMTA1IDApIj4KICAgICAgPHBhdGggZD0iTTIzNyA0MjZRMjM3IDUzMCAyMzQgNjMzUTIwOCA2MzMgMTc5LjUgNjMyLjVRMTUxIDYzMiAxMjIuNSA2MzAuNVE5NCA2MjkgNjcuNSA2MjdRNDEgNjI1IDIwIDYyMlEyNSA2NDAgMjUgNjU0UTI1IDY2NSAyMCA2ODVRODYgNjgzIDE0OSA2ODEuNVEyMTIgNjgwIDI3OCA2ODBRMzQ0IDY4MCA0MDcgNjgxLjVRNDcwIDY4MyA1MzYgNjg1UTUzMSA2NjUgNTMxIDY1M1E1MzEgNjQwIDUzNiA2MjJRNTE1IDYyNSA0ODguNSA2MjdRNDYyIDYyOSA0MzMuNSA2MzAuNVE0MDUgNjMyIDM3Ni41IDYzMi41UTM0OCA2MzMgMzIyIDYzM1EzMTkgNTMwIDMxOSA0MjZWMjU0UTMxOSAxODggMzIxLjUgMTI0UTMyNCA2MCAzMjcgLTJRMzA0IDAgMjc4IDBRMjUyIDAgMjI5IC0yUTIzMiA2MCAyMzQuNSAxMjRRMjM3IDE4OCAyMzcgMjU0WiIvPgogICAgPC9nPgogICAgPHVzZSBocmVmPSIjb3Blbi1hIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgyNzg1LjcxNCAwKSIvPgogICAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMzU3My43MTQgMCkiPgogICAgICA8cGF0aCBkPSJNMjM3IDQyNlEyMzcgNTMwIDIzNCA2MzNRMjA4IDYzMyAxNzkuNSA2MzIuNVExNTEgNjMyIDEyMi41IDYzMC41UTk0IDYyOSA2Ny41IDYyN1E0MSA2MjUgMjAgNjIyUTI1IDY0MCAyNSA2NTRRMjUgNjY1IDIwIDY4NVE4NiA2ODMgMTQ5IDY4MS41UTIxMiA2ODAgMjc4IDY4MFEzNDQgNjgwIDQwNyA2ODEuNVE0NzAgNjgzIDUzNiA2ODVRNTMxIDY2NSA1MzEgNjUzUTUzMSA2NDAgNTM2IDYyMlE1MTUgNjI1IDQ4OC41IDYyN1E0NjIgNjI5IDQzMy41IDYzMC41UTQwNSA2MzIgMzc2LjUgNjMyLjVRMzQ4IDYzMyAzMjIgNjMzUTMxOSA1MzAgMzE5IDQyNlYyNTRRMzE5IDE4OCAzMjEuNSAxMjRRMzI0IDYwIDMyNyAtMlEzMDQgMCAyNzggMFEyNTIgMCAyMjkgLTJRMjMyIDYwIDIzNC41IDEyNFEyMzcgMTg4IDIzNyAyNTRaIi8+CiAgICA8L2c+CiAgICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg0MjA4LjcxNCAwKSI+CiAgICAgIDxwYXRoIGQ9Ik05OCA0MjdROTggNDkzIDk1LjUgNTU3UTkzIDYyMSA5MCA2ODVRMTM1IDY4MyAxNzkuNSA2ODEuNVEyMjQgNjgwIDI2OSA2ODBRMzE0IDY4MCAzNTggNjgxLjVRNDAyIDY4MyA0NDcgNjg1UTQ0NCA2NzAgNDQ0IDY1NVE0NDQgNjQwIDQ0NyA2MjVRNDE1IDYyNyAzODguNSA2MjlRMzYyIDYzMSAzMzIuNSA2MzNRMzAzIDYzNSAyNjggNjM2LjVRMjMzIDYzOCAxODQgNjM4UTE4MyA2MDYgMTgxLjUgNTc3UTE4MCA1NDggMTgwIDUxMVExODAgNDcyIDE4MC41IDQzNVExODEgMzk4IDE4MSAzNzlRMjI1IDM3OSAyNjAgMzgwUTI5NSAzODEgMzI0IDM4Mi41UTM1MyAzODQgMzc3LjUgMzg1LjVRNDAyIDM4NyA0MjQgMzg5UTQyMSAzNzQgNDIxIDM1OFE0MjEgMzQzIDQyNCAzMjhRMzk4IDMzMSAzNjMuNSAzMzNRMzI5IDMzNSAyOTQuNSAzMzUuNVEyNjAgMzM2IDIyOS41IDMzNi41UTE5OSAzMzcgMTgxIDMzN1ExODEgMzI4IDE4MC41IDMxNy41UTE4MCAzMDcgMTgwIDI5MVYxOTJRMTgwIDEzNSAxODAuNSA5OFExODEgNjEgMTgyIDQyUTIxNSA0MiAyNTIgNDJRMjkwIDQyIDMyNi41IDQzLjVRMzYzIDQ1IDM5NS41IDQ3LjVRNDI4IDUwIDQ1MiA1NVE0NTAgNDggNDQ5LjUgMzkuNVE0NDkgMzEgNDQ5IDI0UTQ0OSA4IDQ1MiAtMlE0MDcgMCAzNjIuNSAwUTMxOCAwIDI3MiAwUTIyNiAwIDE4MSAwUTEzNiAwIDkwIC0yUTkzIDYyIDk1LjUgMTI1LjVROTggMTg5IDk4IDI1NVoiLz4KICAgIDwvZz48L2c+CiAgPC9kZWZzPgogIDxnIGZpbGw9IiMxMDEwMTAiPjx1c2UgaHJlZj0iI3NpZ2h0bGluZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjAgMTUpIHNjYWxlKC42KSIvPjx1c2UgaHJlZj0iI2FjZXRhdGUtd29yZG1hcmsiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDk5Ljc1IDY4LjkwKSBzY2FsZSguMDcgLS4wNykiLz48L2c+Cjwvc3ZnPgo=" width="446" height="90" alt="Acetate">
+        <img class="logo logo-reversed" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NDYiIGhlaWdodD0iOTAiIHZpZXdCb3g9IjAgMCA0NDYgOTAiPgogIDx0aXRsZT5BY2V0YXRlIGhvcml6b250YWwgbG9ja3VwIHJldmVyc2VkPC90aXRsZT4KICA8ZGVmcz4KICAgIDxwYXRoIGlkPSJzaWdodGxpbmUiIGZpbGwtcnVsZT0iZXZlbm9kZCIgZD0iTTAgMEg4NlYxMDBIMFogTTIgNThMMTQgNTJINzJMODQgNThaIi8+CiAgICA8ZyBpZD0iYWNldGF0ZS13b3JkbWFyayI+PHBhdGggaWQ9Im9wZW4tYSIgZD0iTTE3IDBMMzMwIDY5OEgzNDlMNjUwIDBINTQ0TDM0NSA2ODBMOTEgMFoiLz4KICAgIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDc3NCAwKSI+CiAgICAgIDxwYXRoIGQ9Ik02MTUgMzlRNjA2IDMxIDU4Ni41IDIxLjVRNTY3IDEyIDUzOS41IDQuNVE1MTIgLTMgNDc4IC05UTQ0NCAtMTUgNDA3IC0xNVEzMjggLTE1IDI2MSA3LjVRMTk0IDMwIDE0NS41IDc2UTk3IDEyMiA2OS41IDE4OC41UTQyIDI1NSA0MiAzNDBRNDIgNDI1IDY5LjUgNDkxLjVROTcgNTU4IDE0Ni41IDYwNFExOTYgNjUwIDI2NSA2NzRRMzM0IDY5OCA0MTcgNjk4UTQ4MyA2OTggNTM3LjUgNjg0LjVRNTkyIDY3MSA2MzQgNjUyUTYyNiA2MzggNjIxIDYxNFE2MTYgNTkwIDYxMyA1NzRMNjA3IDU3MlE1OTcgNTg0IDU3OSA1OTlRNTYxIDYxNCA1MzcgNjI4UTUxMyA2NDIgNDgzIDY1MS41UTQ1MyA2NjEgNDE3IDY2MVEzNTggNjYxIDMwNy41IDY0MlEyNTcgNjIzIDIxOS41IDU4My41UTE4MiA1NDQgMTYxIDQ4My41UTE0MCA0MjMgMTQwIDM0MFExNDAgMjU3IDE2MSAxOTYuNVExODIgMTM2IDIxOS41IDk2LjVRMjU3IDU3IDMwNy41IDM4UTM1OCAxOSA0MTcgMTlRNDUzIDE5IDQ4My41IDI4UTUxNCAzNyA1MzkuNSA0OS41UTU2NSA2MiA1ODUuNSA3Ni41UTYwNiA5MSA2MjAgMTAyTDYyNCA5OFoiLz4KICAgIDwvZz4KICAgIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDE1MTIgMCkiPgogICAgICA8cGF0aCBkPSJNOTggNDI3UTk4IDQ5MyA5NS41IDU1N1E5MyA2MjEgOTAgNjg1UTEzNSA2ODMgMTc5LjUgNjgxLjVRMjI0IDY4MCAyNjkgNjgwUTMxNCA2ODAgMzU4IDY4MS41UTQwMiA2ODMgNDQ3IDY4NVE0NDQgNjcwIDQ0NCA2NTVRNDQ0IDY0MCA0NDcgNjI1UTQxNSA2MjcgMzg4LjUgNjI5UTM2MiA2MzEgMzMyLjUgNjMzUTMwMyA2MzUgMjY4IDYzNi41UTIzMyA2MzggMTg0IDYzOFExODMgNjA2IDE4MS41IDU3N1ExODAgNTQ4IDE4MCA1MTFRMTgwIDQ3MiAxODAuNSA0MzVRMTgxIDM5OCAxODEgMzc5UTIyNSAzNzkgMjYwIDM4MFEyOTUgMzgxIDMyNCAzODIuNVEzNTMgMzg0IDM3Ny41IDM4NS41UTQwMiAzODcgNDI0IDM4OVE0MjEgMzc0IDQyMSAzNThRNDIxIDM0MyA0MjQgMzI4UTM5OCAzMzEgMzYzLjUgMzMzUTMyOSAzMzUgMjk0LjUgMzM1LjVRMjYwIDMzNiAyMjkuNSAzMzYuNVExOTkgMzM3IDE4MSAzMzdRMTgxIDMyOCAxODAuNSAzMTcuNVExODAgMzA3IDE4MCAyOTFWMTkyUTE4MCAxMzUgMTgwLjUgOThRMTgxIDYxIDE4MiA0MlEyMTUgNDIgMjUyIDQyUTI5MCA0MiAzMjYuNSA0My41UTM2MyA0NSAzOTUuNSA0Ny41UTQyOCA1MCA0NTIgNTVRNDUwIDQ4IDQ0OS41IDM5LjVRNDQ5IDMxIDQ0OSAyNFE0NDkgOCA0NTIgLTJRNDA3IDAgMzYyLjUgMFEzMTggMCAyNzIgMFEyMjYgMCAxODEgMFExMzYgMCA5MCAtMlE5MyA2MiA5NS41IDEyNS41UTk4IDE4OSA5OCAyNTVaIi8+CiAgICA8L2c+CiAgICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgyMTA1IDApIj4KICAgICAgPHBhdGggZD0iTTIzNyA0MjZRMjM3IDUzMCAyMzQgNjMzUTIwOCA2MzMgMTc5LjUgNjMyLjVRMTUxIDYzMiAxMjIuNSA2MzAuNVE5NCA2MjkgNjcuNSA2MjdRNDEgNjI1IDIwIDYyMlEyNSA2NDAgMjUgNjU0UTI1IDY2NSAyMCA2ODVRODYgNjgzIDE0OSA2ODEuNVEyMTIgNjgwIDI3OCA2ODBRMzQ0IDY4MCA0MDcgNjgxLjVRNDcwIDY4MyA1MzYgNjg1UTUzMSA2NjUgNTMxIDY1M1E1MzEgNjQwIDUzNiA2MjJRNTE1IDYyNSA0ODguNSA2MjdRNDYyIDYyOSA0MzMuNSA2MzAuNVE0MDUgNjMyIDM3Ni41IDYzMi41UTM0OCA2MzMgMzIyIDYzM1EzMTkgNTMwIDMxOSA0MjZWMjU0UTMxOSAxODggMzIxLjUgMTI0UTMyNCA2MCAzMjcgLTJRMzA0IDAgMjc4IDBRMjUyIDAgMjI5IC0yUTIzMiA2MCAyMzQuNSAxMjRRMjM3IDE4OCAyMzcgMjU0WiIvPgogICAgPC9nPgogICAgPHVzZSBocmVmPSIjb3Blbi1hIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgyNzg1LjcxNCAwKSIvPgogICAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMzU3My43MTQgMCkiPgogICAgICA8cGF0aCBkPSJNMjM3IDQyNlEyMzcgNTMwIDIzNCA2MzNRMjA4IDYzMyAxNzkuNSA2MzIuNVExNTEgNjMyIDEyMi41IDYzMC41UTk0IDYyOSA2Ny41IDYyN1E0MSA2MjUgMjAgNjIyUTI1IDY0MCAyNSA2NTRRMjUgNjY1IDIwIDY4NVE4NiA2ODMgMTQ5IDY4MS41UTIxMiA2ODAgMjc4IDY4MFEzNDQgNjgwIDQwNyA2ODEuNVE0NzAgNjgzIDUzNiA2ODVRNTMxIDY2NSA1MzEgNjUzUTUzMSA2NDAgNTM2IDYyMlE1MTUgNjI1IDQ4OC41IDYyN1E0NjIgNjI5IDQzMy41IDYzMC41UTQwNSA2MzIgMzc2LjUgNjMyLjVRMzQ4IDYzMyAzMjIgNjMzUTMxOSA1MzAgMzE5IDQyNlYyNTRRMzE5IDE4OCAzMjEuNSAxMjRRMzI0IDYwIDMyNyAtMlEzMDQgMCAyNzggMFEyNTIgMCAyMjkgLTJRMjMyIDYwIDIzNC41IDEyNFEyMzcgMTg4IDIzNyAyNTRaIi8+CiAgICA8L2c+CiAgICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg0MjA4LjcxNCAwKSI+CiAgICAgIDxwYXRoIGQ9Ik05OCA0MjdROTggNDkzIDk1LjUgNTU3UTkzIDYyMSA5MCA2ODVRMTM1IDY4MyAxNzkuNSA2ODEuNVEyMjQgNjgwIDI2OSA2ODBRMzE0IDY4MCAzNTggNjgxLjVRNDAyIDY4MyA0NDcgNjg1UTQ0NCA2NzAgNDQ0IDY1NVE0NDQgNjQwIDQ0NyA2MjVRNDE1IDYyNyAzODguNSA2MjlRMzYyIDYzMSAzMzIuNSA2MzNRMzAzIDYzNSAyNjggNjM2LjVRMjMzIDYzOCAxODQgNjM4UTE4MyA2MDYgMTgxLjUgNTc3UTE4MCA1NDggMTgwIDUxMVExODAgNDcyIDE4MC41IDQzNVExODEgMzk4IDE4MSAzNzlRMjI1IDM3OSAyNjAgMzgwUTI5NSAzODEgMzI0IDM4Mi41UTM1MyAzODQgMzc3LjUgMzg1LjVRNDAyIDM4NyA0MjQgMzg5UTQyMSAzNzQgNDIxIDM1OFE0MjEgMzQzIDQyNCAzMjhRMzk4IDMzMSAzNjMuNSAzMzNRMzI5IDMzNSAyOTQuNSAzMzUuNVEyNjAgMzM2IDIyOS41IDMzNi41UTE5OSAzMzcgMTgxIDMzN1ExODEgMzI4IDE4MC41IDMxNy41UTE4MCAzMDcgMTgwIDI5MVYxOTJRMTgwIDEzNSAxODAuNSA5OFExODEgNjEgMTgyIDQyUTIxNSA0MiAyNTIgNDJRMjkwIDQyIDMyNi41IDQzLjVRMzYzIDQ1IDM5NS41IDQ3LjVRNDI4IDUwIDQ1MiA1NVE0NTAgNDggNDQ5LjUgMzkuNVE0NDkgMzEgNDQ5IDI0UTQ0OSA4IDQ1MiAtMlE0MDcgMCAzNjIuNSAwUTMxOCAwIDI3MiAwUTIyNiAwIDE4MSAwUTEzNiAwIDkwIC0yUTkzIDYyIDk1LjUgMTI1LjVROTggMTg5IDk4IDI1NVoiLz4KICAgIDwvZz48L2c+CiAgPC9kZWZzPgogIDxnIGZpbGw9IiNGRkZGRkYiPjx1c2UgaHJlZj0iI3NpZ2h0bGluZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjAgMTUpIHNjYWxlKC42KSIvPjx1c2UgaHJlZj0iI2FjZXRhdGUtd29yZG1hcmsiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDk5Ljc1IDY4LjkwKSBzY2FsZSguMDcgLS4wNykiLz48L2c+Cjwvc3ZnPgo=" width="446" height="90" alt="Acetate">
+      </div>
+    </header>
+    <main id="main">
+      <section class="hero" aria-labelledby="headline">
+        <div class="copy">
+          <h1 id="headline"><span>See tomorrow.</span><span>Shape it today.</span></h1>
+          <p class="description">Visualize your wealth growth. Understand how today’s spending and saving may shape your future.</p>
+          <a class="login" href="#account" id="open-login" aria-controls="account" aria-expanded="false">Log in to Acetate <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg></a>
+        </div>
+        <section class="preview" aria-labelledby="preview-title">
+          <header class="preview-header"><h2 id="preview-title">Your wealth, over time</h2><span class="sample">Illustrative example</span></header>
+          <div class="reading">
+            <p class="reading-label">Estimated wealth in <span id="selected-year">2046</span></p>
+            <p class="reading-value" id="wealth-value"></p>
+            <p class="difference" id="difference"></p>
+          </div>
+          <svg class="chart chart-touch" viewBox="0 0 460 190" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="chart-title chart-description">
+            <title id="chart-title">Illustrative wealth projection</title>
+            <desc id="chart-description">The first twelve months in detail, followed by a break to years five through thirty. A baseline scenario compared with investing an extra $200 each month.</desc>
+            <g id="chart-grid"></g>
+            <path class="area" id="chart-area"/>
+            <path class="chart-path baseline" id="baseline" pathLength="1"/>
+            <path class="chart-path alternative" id="alternative" pathLength="1"/>
+            <circle class="point-halo" id="point-halo" r="11"/>
+            <line class="cursor" id="cursor" y1="8" y2="156"/>
+            <circle class="point baseline" id="baseline-point" r="4"/>
+            <circle class="point alternative" id="alternative-point" r="4"/>
+            <g class="axis-text">
+              <text x="38" y="180">Today</text><text x="102" y="180" text-anchor="middle">6 mo</text><text x="168" y="180" text-anchor="end">1 yr</text>
+              <text x="218" y="180" text-anchor="middle">5 yr</text><text x="304" y="180" text-anchor="middle">15 yr</text><text x="434" y="180" text-anchor="end">30 yr</text>
+            </g>
+            <path class="axis-break" d="M182 154 l5 -7 m3 7 l5 -7 M182 176 l5 -7 m3 7 l5 -7"/>
+            <rect x="178" y="3" width="22" height="142" fill="var(--pane)"/>
+            <path class="axis-break" d="M185 8 l5 -6 m-5 8 l5 -6"/>
+
+          </svg>
+          <div class="legend"><span><i class="key" aria-hidden="true"></i>Baseline scenario</span><span id="alt-legend"><i class="key key-alt" aria-hidden="true"></i>Extra $200 / month</span></div>
+          <div class="controls">
+            <div class="control-title"><label for="horizon">Look ahead</label><output id="horizon-value" for="horizon">20 years</output></div>
+            <input class="scrubber" id="horizon" type="range" min="0" max="18" step="1" value="16" aria-describedby="timeline-note assumptions">
+            <div class="range-labels" aria-hidden="true"><span>Today</span><span>30 years</span></div>
+            <div class="timeline-meta"><span id="timeline-note">First year in detail, then the longer view.</span><button id="play" class="play" type="button" aria-label="Play the wealth timeline"><span id="play-label">Replay timeline</span><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,128a96,96,0,0,1-94.71,96H128A95.38,95.38,0,0,1,62.1,197.8a8,8,0,0,1,11-11.63A80,80,0,1,0,71.43,71.39a3.07,3.07,0,0,1-.26.25L44.59,96H72a8,8,0,0,1,0,16H24a8,8,0,0,1-8-8V56a8,8,0,0,1,16,0V85.8L60.25,60A96,96,0,0,1,224,128Z"/></svg></button></div>
+            <label class="choice" for="extra"><span class="choice-text">Compare investing an extra $200 / month</span><input id="extra" type="checkbox" checked></label>
+          </div>
+          <p class="assumptions" id="assumptions"><span>Sample: $119k start, $1,600/month, 8% annual return, 4.5% inflation.</span><span>Today’s USD. Estimates, not guarantees. Fees and taxes excluded.</span></p>
+          <p class="sr-only" id="scenario-status" role="status"></p>
+          <noscript><p class="assumptions">Enable JavaScript to explore this example. The login link works without it.</p></noscript>
+        </section>
+      </section>
+    </main>
+    <footer><p>Financial planning with a longer view.</p><nav class="legal-links" aria-label="Legal"><a href="/privacy-policy">Privacy</a><a href="/terms-of-service">Terms</a></nav><p>© <span id="year">2026</span> Acetate</p></footer>
+  </div>
+  <aside id="account" class="account-panel" aria-label="Sign in to Acetate" hidden>
+    <button class="account-close" id="close-login" type="button" aria-label="Close sign-in">×</button>
+    <h2>Your Acetate account</h2><p>Sign in to open your workspace.</p>
+    <a class="login" href="https://app.acetate.me/login" id="google-login">Sign in with Google</a>
+  </aside>
+  <script>
+    const account = document.getElementById('account');
+    const openLogin = document.getElementById('open-login');
+    const closeLogin = () => { account.hidden = true; openLogin.setAttribute('aria-expanded', 'false'); openLogin.focus(); };
+    openLogin.addEventListener('click', event => { event.preventDefault(); account.hidden = false; openLogin.setAttribute('aria-expanded', 'true'); document.getElementById('google-login').focus(); });
+    document.getElementById('close-login').addEventListener('click', closeLogin);
+    account.addEventListener('keydown', event => { if (event.key === 'Escape') closeLogin(); });
+    // A small working demo of the existing landing example's model, not personal financial data.
+    const INITIAL_WEALTH = 119000;
+    const MONTHLY_INVESTMENT = 1600;
+    const EXTRA_INVESTMENT = 200;
+    const ANNUAL_RETURN = .08;
+    const INFLATION = .045;
+    const START_YEAR = new Date().getFullYear();
+    const $ = id => document.getElementById(id);
+    const money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+    const shortMoney = value => value >= 1000000 ? '$' + (value / 1000000).toFixed(1) + 'm' : '$' + Math.round(value / 1000) + 'k';
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+    let announcementTimer;
+    let motionFrame = 0;
+    let tourFrame = 0;
+    let currentMonths = 240;
+    const checkpoints = [...Array.from({length: 13}, (_, i) => i), 60, 120, 180, 240, 300, 360];
+    function wealthAt(years, contribution) {
+      const months = Math.round(years * 12);
+      const rate = Math.pow(1 + ANNUAL_RETURN, 1 / 12) - 1;
+      const growth = Math.pow(1 + rate, months);
+      return (INITIAL_WEALTH * growth + contribution * (growth - 1) / rate) / Math.pow(1 + INFLATION, years);
+    }
+    const baseline = Array.from({length: 361}, (_, i) => wealthAt(i / 12, MONTHLY_INVESTMENT));
+    const alternative = Array.from({length: 361}, (_, i) => wealthAt(i / 12, MONTHLY_INVESTMENT + EXTRA_INVESTMENT));
+    const ceiling = Math.ceil(alternative.at(-1) / 250000) * 250000;
+    // The first year has its own horizontal scale; the gap explicitly skips to year 5.
+    const x = months => months <= 12 ? 38 + months / 12 * 130 : 218 + (months - 60) / 300 * 216;
+    const y = value => 156 - value / ceiling * 148;
+    const segmentPath = (values, start, end) => values.slice(start, end + 1).map((v, i) => `${i ? 'L' : 'M'}${x(start + i).toFixed(2)},${y(v).toFixed(2)}`).join(' ');
+    const pathFor = values => segmentPath(values, 0, 12) + ' ' + segmentPath(values, 60, 360);
+    $('baseline').setAttribute('d', pathFor(baseline));
+    $('alternative').setAttribute('d', pathFor(alternative));
+    const areaFor = (start, end) => segmentPath(alternative, start, end) + ' ' + baseline.slice(start,end + 1).reverse().map((v, i) => `L${x(end - i).toFixed(2)},${y(v).toFixed(2)}`).join(' ') + ' Z';
+    $('chart-area').setAttribute('d', areaFor(0,12) + ' ' + areaFor(60,360));
+    for (let i = 0; i <= 2; i++) {
+      const amount = i * ceiling / 2;
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      for (const [name, value] of Object.entries({ x1: 38, x2: 434, y1: y(amount), y2: y(amount), class: 'grid-line' })) line.setAttribute(name, value);
+      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      for (const [name, value] of Object.entries({ x: 30, y: y(amount) + 4, class: 'axis-text', 'text-anchor': 'end' })) label.setAttribute(name, value);
+      label.textContent = amount === 0 ? '$0' : shortMoney(amount);
+      $('chart-grid').append(line, label);
+    }
+    function labelFor(months) {
+      return months === 0 ? 'Today' : months < 12 ? `${months} ${months === 1 ? 'month' : 'months'}` : `${months / 12} ${months === 12 ? 'year' : 'years'}`;
+    }
+    function paint(months) {
+      const compare = $('extra').checked;
+      const years = months / 12;
+      const base = wealthAt(years, MONTHLY_INVESTMENT);
+      const adjusted = wealthAt(years, MONTHLY_INVESTMENT + EXTRA_INVESTMENT);
+      const position = x(months);
+      $('wealth-value').textContent = money.format(compare ? adjusted : base);
+      $('difference').textContent = compare ? (months === 0 ? 'Both scenarios start from the same wealth.' : `${money.format(adjusted - base)} more than the baseline scenario`) : 'At the sample’s current investing pace';
+      $('cursor').setAttribute('x1', position); $('cursor').setAttribute('x2', position);
+      for (const [id, value] of [['baseline-point', base], ['alternative-point', adjusted], ['point-halo', compare ? adjusted : base]]) {
+        $(id).setAttribute('cx', position); $(id).setAttribute('cy', y(value));
+      }
+      for (const id of ['alternative', 'alternative-point', 'chart-area', 'alt-legend']) $(id).style.visibility = compare ? 'visible' : 'hidden';
+    }
+    function select(index, announce = false, animate = false) {
+      const targetMonths = checkpoints[index];
+      const label = labelFor(targetMonths);
+      const now = new Date(); const date = new Date(now.getFullYear(), now.getMonth() + targetMonths, 1);
+      $('selected-year').textContent = targetMonths < 12 ? new Intl.DateTimeFormat('en-US', {month:'short',year:'numeric'}).format(date) : date.getFullYear();
+      $('horizon').value = index;
+      $('horizon-value').textContent = label;
+      $('horizon').setAttribute('aria-valuetext', label === 'Today' ? 'Today' : `${label} ahead`);
+      const base = wealthAt(targetMonths / 12, MONTHLY_INVESTMENT);
+      const adjusted = wealthAt(targetMonths / 12, MONTHLY_INVESTMENT + EXTRA_INVESTMENT);
+      const message = `${label}: baseline ${money.format(base)}${$('extra').checked ? `, with an extra $200 per month ${money.format(adjusted)}` : ''}. Estimates in today's USD. The axis shows months 0 through 12 in detail, skips to year 5, then shows years 5 through 30.`;
+      $('chart-description').textContent = message;
+      cancelAnimationFrame(motionFrame);
+      const from = currentMonths;
+      currentMonths = targetMonths;
+      if (animate && !reducedMotion.matches && (from <= 12) === (targetMonths <= 12)) {
+        const start = performance.now();
+        const move = now => {
+          const progress = Math.min(1,(now-start)/320);
+          paint(from + (targetMonths-from) * (1-Math.pow(1-progress,3)));
+          if (progress < 1) motionFrame = requestAnimationFrame(move);
+        };
+        motionFrame = requestAnimationFrame(move);
+      } else {
+        paint(targetMonths);
+        if (animate && !reducedMotion.matches) $('point-halo').animate([{opacity:0,transform:'scale(.7)'},{opacity:.08,transform:'scale(1)'}],{duration:320});
+      }
+      if (announce) {
+        clearTimeout(announcementTimer);
+        announcementTimer = setTimeout(() => { $('scenario-status').textContent = message; }, 180);
+      }
+    }
+    function stopTour() {
+      cancelAnimationFrame(tourFrame); tourFrame = 0;
+      $('play').disabled = false; $('play-label').textContent = 'Replay timeline';
+    }
+    function playTour() {
+      stopTour();
+      if (reducedMotion.matches) { select(16,true); return; }
+      $('play').disabled = true; $('play-label').textContent = 'Exploring…';
+      const start = performance.now();
+      // One 4.4-second journey, then settle. User interaction takes over immediately.
+      const stops = [{at:0,index:0},{at:400,index:3},{at:800,index:6},{at:1200,index:12},{at:1800,index:13},{at:2300,index:14},{at:2800,index:15},{at:3300,index:16},{at:3800,index:18},{at:4400,index:16}];
+      let next = 0;
+      const frame = now => {
+        const elapsed = now-start;
+        while (next < stops.length && elapsed >= stops[next].at) select(stops[next++].index,false,true);
+        if (next < stops.length) tourFrame = requestAnimationFrame(frame);
+        else stopTour();
+      };
+      tourFrame = requestAnimationFrame(frame);
+    }
+    $('horizon').addEventListener('input', () => { stopTour(); select(Number($('horizon').value),true,true); });
+    $('horizon').addEventListener('pointerdown', stopTour);
+    $('extra').addEventListener('change', () => { stopTour(); select(Number($('horizon').value),true); if (!reducedMotion.matches) $('wealth-value').animate([{opacity:.3},{opacity:1}],{duration:220}); });
+    $('play').addEventListener('click', playTour);
+    const chart = document.querySelector('.chart');
+    function inspect(event) {
+      const rect = chart.getBoundingClientRect();
+      const local = (event.clientX-rect.left)/rect.width*460;
+      const index = checkpoints.reduce((nearest,months,i) => Math.abs(x(months)-local) < Math.abs(x(checkpoints[nearest])-local) ? i : nearest,0);
+      if (Number($('horizon').value) !== index) { stopTour(); select(index,true); }
+    }
+    chart.addEventListener('pointermove', event => { if (event.pointerType === 'mouse' || event.buttons === 1) inspect(event); });
+    chart.addEventListener('pointerdown', event => { stopTour(); inspect(event); });
+    reducedMotion.addEventListener('change', () => { if (reducedMotion.matches) { stopTour(); cancelAnimationFrame(motionFrame); select(Number($('horizon').value)); } });
+    document.addEventListener('visibilitychange', () => { if (document.hidden) { stopTour(); cancelAnimationFrame(motionFrame); paint(currentMonths); } });
+    $('year').textContent = START_YEAR;
+    select(16);
+    if (!reducedMotion.matches) playTour();
+  </script>
+</body>
+</html>
