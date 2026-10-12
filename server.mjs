@@ -3,7 +3,6 @@ import { readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { resolve, extname, sep } from 'node:path';
-import { invited, requestAccess } from './server/entry.mjs';
 import { proxyBackend, isBackendRoute } from './server/backend.mjs';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
@@ -35,24 +34,12 @@ export default async function handler(request, response) {
   if (pathname === '/api/auth/config' && request.method === 'GET') {
     response.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
     response.end(JSON.stringify({
-      appOrigin: process.env.AUTH_APP_ORIGIN || 'https://app.acetate.me',
-      landingOrigin: process.env.AUTH_LANDING_ORIGIN || 'https://www.acetate.me',
-      loginUrl: (process.env.AUTH_LANDING_ORIGIN || 'https://www.acetate.me') + '/#sign-in',
-      callbackUrl: process.env.AUTH_CALLBACK_URL || (process.env.AUTH_LANDING_ORIGIN || 'https://www.acetate.me') + '/?auth=callback',
-      passkeysEnabled: process.env.AUTH_PASSKEYS_ENABLED === 'true',
       url: process.env.AUTH_SUPABASE_URL || '',
       publishableKey: process.env.AUTH_SUPABASE_PUBLISHABLE_KEY || '',
     }));
     return;
   }
 
-  if (pathname === '/login') { response.writeHead(302, { Location: (process.env.AUTH_LANDING_ORIGIN || 'https://www.acetate.me') + '/#sign-in', 'Cache-Control': 'no-store' }).end(); return; }
-  if (pathname === '/api/request-access' && request.method === 'POST') { await requestAccess(request, response); return; }
-  if (pathname === '/api/auth/authorize' || isBackendRoute(pathname, request.method)) {
-    const status = await invited(request);
-    if (status !== 200) { response.writeHead(status, { 'Content-Type':'application/json', 'Cache-Control':'no-store' }).end(JSON.stringify({error:'Account access unavailable.'})); return; }
-    if (pathname === '/api/auth/authorize') { response.writeHead(200, {'Content-Type':'application/json','Cache-Control':'no-store'}).end('{}'); return; }
-  }
   if (isBackendRoute(pathname, request.method)) {
     await proxyBackend(request, response, backendUrl);
     return;
@@ -69,7 +56,7 @@ export default async function handler(request, response) {
 
   const file = vendor[pathname]
     ? (existsSync(resolve(publicRoot, '.' + pathname)) ? resolve(publicRoot, '.' + pathname) : resolve(root, vendor[pathname]))
-    : resolve(publicRoot, '.' + (pathname === '/auth/receive' ? '/auth-receive.html' : ['/', '/auth/callback'].includes(pathname) ? '/index.html' : pathname));
+    : resolve(publicRoot, '.' + (['/', '/login', '/auth/callback'].includes(pathname) ? '/index.html' : pathname));
 
   if (!vendor[pathname] && !file.startsWith(publicRoot + sep)) {
     response.writeHead(403).end('Forbidden');
@@ -78,7 +65,6 @@ export default async function handler(request, response) {
 
   try {
     const content = await readFile(file);
-    if (pathname === '/auth/receive') response.setHeader('Content-Security-Policy', `frame-ancestors ${process.env.AUTH_LANDING_ORIGIN || 'https://www.acetate.me'}`);
     response.writeHead(200, { 'Content-Type': (pathname.startsWith('/vendor/sse/') ? 'text/javascript' : mime[extname(file)] || 'application/octet-stream') });
     response.end(request.method === 'HEAD' ? undefined : content);
   } catch {

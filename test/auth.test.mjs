@@ -21,7 +21,7 @@ async function mount({ session = null, configured = true, loginError = null } = 
   };
   runInNewContext(source.replace(/export /g, ''), {
     document: { querySelector: selector => elements.get(selector) },
-    window: { dispatchEvent() {}, location: { assign: url => calls.push({redirect:url}), origin: 'http://127.0.0.1:3000', href: 'http://127.0.0.1:3000/' },
+    window: { dispatchEvent() {}, location: { origin: 'http://127.0.0.1:3000', href: 'http://127.0.0.1:3000/' },
       supabase: { createClient: () => ({ auth }) } },
     fetch: async () => ({ ok: true, json: async () => ({ url: configured ? 'https://example.supabase.co' : '', publishableKey: configured ? 'sb_publishable_example' : '' }) }),
     CustomEvent: class { constructor(type, options) { this.type = type; this.detail = options.detail; } },
@@ -31,11 +31,12 @@ async function mount({ session = null, configured = true, loginError = null } = 
   return { elements, calls };
 }
 
-test('signed-out account opens the landing sign-in card', async () => {
+test('signed-out account starts Google OAuth with a return to this frontend', async () => {
   const { elements, calls } = await mount();
   assert.equal(elements.get('#sign-in').disabled, false);
   await elements.get('#sign-in').handlers.click();
-  assert.equal(calls[0].redirect, 'https://www.acetate.me/#sign-in');
+  assert.equal(calls[0].provider, 'google');
+  assert.equal(calls[0].options.redirectTo, 'http://127.0.0.1:3000/auth/callback');
 });
 
 test('restored session shows identity and sign-out clears the account panel', async () => {
@@ -46,6 +47,14 @@ test('restored session shows identity and sign-out clears the account panel', as
   await elements.get('#sign-out').handlers.click();
   assert.equal(elements.get('#sign-in').hidden, false);
   assert.equal(elements.get('#sign-out').hidden, true);
+});
+
+test('failed OAuth initiation reports the error and permits retry', async () => {
+  const { elements } = await mount({ loginError: { message: 'Provider unavailable' } });
+  await elements.get('#sign-in').handlers.click();
+  assert.equal(elements.get('#auth-error').textContent, 'Provider unavailable');
+  assert.equal(elements.get('#auth-error').hidden, false);
+  assert.equal(elements.get('#sign-in').disabled, false);
 });
 
 test('missing configuration cannot initiate sign-in and reports why', async () => {
