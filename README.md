@@ -51,3 +51,13 @@ The landing's own `vercel.json` defines its static output and public legal route
 ## Verification
 
 `npm test` covers authentication behavior, job submission/resumption, proxy route restrictions and headers, streaming, browser history, sorting, and timings. Browser checks cover the landing account panel and the real OAuth return flow.
+
+## Landing-owned sign-in migration
+
+Deploy together with `apps/landing`. `/login` redirects to the landing card; Google OAuth starts on `https://www.acetate.me` and returns to `https://www.acetate.me/?auth=callback`. Add that exact return URL to Supabase Auth's redirect allowlist before release. Keep prior callbacks during rollout. The app receives the session through `/auth/receive`, which accepts only its configured landing parent and a one-use nonce, then verifies the account server-side before persisting the session. Tokens are never put in query strings or fragments.
+
+Configure `AUTH_ALLOWED_EMAILS` with the existing invited members before deployment. Missing configuration denies protected frontend proxy access and session handoff. This gate does not replace the classifier API's own authorization policies. `AUTH_LANDING_ORIGIN` must match the canonical host (www by default). The landing's `/api/auth/config` and `/api/request-access` are hosting rewrites to this app; no new landing server is needed.
+
+Set Resend variables for invitation notifications. The request sends the owner a notification and promises no immediate confirmation email. Production rate limiting/abuse protection should be applied to `/api/request-access` at the host. No test sends real mail.
+
+For passkeys, enable Supabase's experimental passkey feature, preserve the existing relying-party ID `www.acetate.me` and the allowed ceremony origin to `https://www.acetate.me`, and only then set `AUTH_PASSKEYS_ENABLED=true`. After Google sign-in and server authorization, members without a passkey can create one or skip setup. The existing production NEXT_PUBLIC_ALLOWED_USER_EMAIL is accepted as a server-only fallback while migrating to AUTH_ALLOWED_EMAILS. AUTH_CALLBACK_URL selects the OAuth callback; production uses https://www.acetate.me/?auth=callback. Never copy secrets into landing assets. Test a real Google round trip and a registered passkey with an invited test account after provider configuration.

@@ -23,22 +23,8 @@ function render(session) {
   window.dispatchEvent(new CustomEvent('acetate-auth', { detail: session }));
 }
 
-async function startSignIn() {
-  showError('');
-  signIn.disabled = true;
-  panel.setAttribute('aria-busy', 'true');
-  try {
-    const { error } = await client.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
-    });
-    if (error) throw error;
-  } catch (error) {
-    showError(error.message || 'Could not sign in. Please try again.');
-    signIn.disabled = false;
-    panel.setAttribute('aria-busy', 'false');
-  }
-}
+let loginUrl = 'https://www.acetate.me/#sign-in';
+async function startSignIn() { window.location.assign(loginUrl); }
 signIn.addEventListener('click', startSignIn);
 
 signOut.addEventListener('click', async () => {
@@ -60,7 +46,9 @@ async function initialize() {
   try {
     const response = await fetch('/api/auth/config', { cache: 'no-store' });
     if (!response.ok) throw new Error('Could not load sign-in settings.');
-    const { url, publishableKey } = await response.json();
+    const settings = await response.json();
+    const { url, publishableKey } = settings;
+    if (settings.loginUrl) loginUrl = settings.loginUrl;
     if (!url || !publishableKey) throw new Error('Sign-in is not configured yet.');
     if (!window.supabase) throw new Error('Could not load sign-in. Please refresh.');
     client = window.supabase.createClient(url, publishableKey, {
