@@ -7,6 +7,11 @@ const PUBLIC_PATHS = new Set([
   "/login",
   "/auth/confirm",
   "/api/request-access",
+  "/api/auth/config",
+  "/api/auth/authorize",
+  "/api/auth/session",
+  "/auth/receive",
+  "/auth-receive.js",
 ]);
 
 export async function updateSession(request: NextRequest) {
